@@ -107,7 +107,7 @@ public class SimpleMask extends Transform<StructuredRecord, StructuredRecord> {
       if (input.get(name) != null) {
         String inputValue = input.get(name).toString();
     String outputValue = Rot13.rotate(inputValue);
-        builder.set(name, input.get(name));
+        builder.set(name, outputValue);
       }
     }
     // If you wanted to make additional changes to the output record, this might be a good place to do it.
@@ -129,16 +129,6 @@ public class SimpleMask extends Transform<StructuredRecord, StructuredRecord> {
    * plugin.
    */
   public static class Config extends PluginConfig {
-    @Name("myOption")
-    @Description("This option is required for this transform.")
-    @Macro // <- Macro means that the value will be substituted at runtime by the user.
-    private final String myOption;
-
-    @Name("myOptionalOption")
-    @Description("And this option is not.")
-    @Macro
-    @Nullable // <- Indicates that the config param is optional
-    private final Integer myOptionalOption;
 
     @Name("schema")
     @Description("Specifies the schema of the records outputted from this plugin.")
@@ -151,8 +141,6 @@ public class SimpleMask extends Transform<StructuredRecord, StructuredRecord> {
     private final String scrambleText;
 
     public Config(String myOption, Integer myOptionalOption, String inputField, String schema) {
-      this.myOption = myOption;
-      this.myOptionalOption = myOptionalOption;
       this.schema = schema;
       this.scrambleText = inputField;
     }
@@ -164,10 +152,6 @@ public class SimpleMask extends Transform<StructuredRecord, StructuredRecord> {
         Schema.parseJson(schema);
       } catch (IOException e) {
         throw new IllegalArgumentException("Output schema cannot be parsed.", e);
-      }
-      // This method should be used to validate that the configuration is valid.
-      if (myOption == null || myOption.isEmpty()) {
-        throw new IllegalArgumentException("myOption is a required field.");
       }
       // This method should be used to validate that the inputField is valid.
       if (scrambleText == null || scrambleText.isEmpty()) {
