@@ -1,0 +1,33 @@
+{
+  "metadata": {
+    "spec-version": "1.5"
+  },
+  "display-name":"Scramble Text",
+  "configuration-groups": [
+    {
+      "label": "Scramble Text Transform",
+      "properties": [
+        {
+          "widget-type": "keyvalue-dropdown",
+          "label": "Fields to Scramble",
+          "name": "scrambleText",
+          "widget-attributes": {
+            "showDelimiter": "false",
+            "dropdownOptions": [
+              "Rot13",
+              "NONE"
+            ],
+            "key-placeholder": "Field Name"
+          }
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "name": "schema",
+      "label": "schema",
+      "widget-type": "schema"
+    }
+  ]
+}
