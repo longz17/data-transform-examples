@@ -1,1 +1,240 @@
-{}
+{
+    "name": "post_action_v1",
+    "description": "Data Pipeline Application",
+    "artifact": {
+        "name": "cdap-data-pipeline",
+        "version": "6.2.2",
+        "scope": "SYSTEM"
+    },
+    "config": {
+        "stages": [
+            {
+                "name": "CloudSQL MySQL",
+                "plugin": {
+                    "name": "CloudSQLMySQL",
+                    "type": "batchsource",
+                    "label": "CloudSQL MySQL",
+                    "artifact": {
+                        "name": "cloudsql-mysql-plugin",
+                        "version": "1.5.0-SNAPSHOT",
+                        "scope": "USER"
+                    },
+                    "properties": {
+                        "jdbcPluginName": "cloudsql-mysql",
+                        "instanceType": "public",
+                        "database": "test",
+                        "referenceName": "mysql-source",
+                        "user": "root",
+                        "password": “${password}“,
+                        "connectionName": "${connection}",
+                        "importQuery": "select * from orders where $CONDITIONS",
+                        "schema": "{\"type\":\"record\",\"name\":\"outputSchema\",\"fields\":[{\"name\":\"account\",\"type\":\"string\"},{\"name\":\"order_sum\",\"type\":[\"int\",\"null\"]},{\"name\":\"product_name\",\"type\":[\"string\",\"null\"]}]}",
+                        "numSplits": "1",
+                        "splitBy": "order_sum",
+                        "boundingQuery": "select min(order_sum),max(order_sum) from orders"
+                    }
+                },
+                "outputSchema": [
+                    {
+                        "name": "etlSchemaBody",
+                        "schema": "{\"type\":\"record\",\"name\":\"outputSchema\",\"fields\":[{\"name\":\"account\",\"type\":\"string\"},{\"name\":\"order_sum\",\"type\":[\"int\",\"null\"]},{\"name\":\"product_name\",\"type\":[\"string\",\"null\"]}]}"
+                    }
+                ],
+                "id": "CloudSQL-MySQL",
+                "type": "batchsource",
+                "label": "CloudSQL MySQL",
+                "icon": "fa-plug",
+                "$$hashKey": "object:2375",
+                "isPluginAvailable": true,
+                "_uiPosition": {
+                    "left": "470px",
+                    "top": "275.5px"
+                }
+            },
+            {
+                "name": "Wrangler",
+                "plugin": {
+                    "name": "Wrangler",
+                    "type": "transform",
+                    "label": "Wrangler",
+                    "artifact": {
+                        "name": "wrangler-transform",
+                        "version": "4.2.2",
+                        "scope": "SYSTEM"
+                    },
+                    "properties": {
+                        "field": "*",
+                        "precondition": "false",
+                        "threshold": "1",
+                        "schema": "{\"type\":\"record\",\"name\":\"etlSchemaBody\",\"fields\":[{\"name\":\"acc\",\"type\":\"string\"},{\"name\":\"or_sum\",\"type\":[\"int\",\"null\"]},{\"name\":\"prd_name\",\"type\":[\"string\",\"null\"]}]}",
+                        "workspaceId": "35890479-f328-4b5b-96bf-a6dedbbfbb9f",
+                        "directives": "fill-null-or-empty :order_sum '1'\nrename account acc\nrename order_sum or_sum\nrename product_name prd_name"
+                    }
+                },
+                "outputSchema": [
+                    {
+                        "name": "etlSchemaBody",
+                        "schema": "{\"type\":\"record\",\"name\":\"etlSchemaBody\",\"fields\":[{\"name\":\"acc\",\"type\":\"string\"},{\"name\":\"or_sum\",\"type\":[\"int\",\"null\"]},{\"name\":\"prd_name\",\"type\":[\"string\",\"null\"]}]}"
+                    }
+                ],
+                "inputSchema": [
+                    {
+                        "name": "CloudSQL MySQL",
+                        "schema": "{\"type\":\"record\",\"name\":\"outputSchema\",\"fields\":[{\"name\":\"account\",\"type\":\"string\"},{\"name\":\"order_sum\",\"type\":[\"int\",\"null\"]},{\"name\":\"product_name\",\"type\":[\"string\",\"null\"]}]}"
+                    }
+                ],
+                "id": "Wrangler",
+                "type": "transform",
+                "label": "Wrangler",
+                "icon": "icon-DataPreparation",
+                "$$hashKey": "object:2376",
+                "isPluginAvailable": true,
+                "_uiPosition": {
+                    "left": "770px",
+                    "top": "275.5px"
+                }
+            },
+            {
+                "name": "CloudSQL MySQL_sink",
+                "plugin": {
+                    "name": "CloudSQLMySQL",
+                    "type": "batchsink",
+                    "label": "CloudSQL MySQL_sink",
+                    "artifact": {
+                        "name": "cloudsql-mysql-plugin",
+                        "version": "1.5.0-SNAPSHOT",
+                        "scope": "USER"
+                    },
+                    "properties": {
+                        "jdbcPluginName": "cloudsql-mysql",
+                        "instanceType": "public",
+                        "transactionIsolationLevel": "TRANSACTION_REPEATABLE_READ",
+                        "connectionTimeout": "10",
+                        "referenceName": "mysql_sink",
+                        "database": "test",
+                        "user": "root",
+                        "password": "${password}",
+                        "connectionName": "${connection}",
+                        "tableName": "order_staging"
+                    }
+                },
+                "outputSchema": [
+                    {
+                        "name": "etlSchemaBody",
+                        "schema": "{\"type\":\"record\",\"name\":\"avroSchema\",\"fields\":[{\"name\":\"account\",\"type\":[\"string\",\"null\"]},{\"name\":\"order_sum\",\"type\":[\"int\",\"null\"]},{\"name\":\"product_name\",\"type\":[\"string\",\"null\"]}]}"
+                    }
+                ],
+                "inputSchema": [
+                    {
+                        "name": "Wrangler",
+                        "schema": "{\"type\":\"record\",\"name\":\"avroSchema\",\"fields\":[{\"name\":\"acc\",\"type\":[\"string\",\"null\"]},{\"name\":\"or_sum\",\"type\":[\"int\",\"null\"]},{\"name\":\"prd_name\",\"type\":[\"string\",\"null\"]}]}"
+                    }
+                ],
+                "id": "CloudSQL-MySQL_sink",
+                "type": "batchsink",
+                "label": "CloudSQL MySQL_sink",
+                "icon": "fa-plug",
+                "$$hashKey": "object:2377",
+                "isPluginAvailable": true,
+                "_uiPosition": {
+                    "left": "1070px",
+                    "top": "275.5px"
+                }
+            },
+            {
+                "name": "CloudSQL MySQL Execute",
+                "plugin": {
+                    "name": "CloudSQLMySQL",
+                    "type": "action",
+                    "label": "CloudSQL MySQL Execute",
+                    "artifact": {
+                        "name": "cloudsql-mysql-plugin",
+                        "version": "1.5.0-SNAPSHOT",
+                        "scope": "USER"
+                    },
+                    "properties": {
+                        "jdbcPluginName": "cloudsql-mysql",
+                        "instanceType": "public",
+                        "connectionTimeout": "10",
+                        "database": "test",
+                        "user": "root",
+                        "password": "${password}",
+                        "connectionName": "${connection}",
+                        "query": "truncate table order_staging;"
+                    }
+                },
+                "outputSchema": [
+                    {
+                        "name": "etlSchemaBody",
+                        "schema": ""
+                    }
+                ],
+                "id": "CloudSQL-MySQL-Execute",
+                "type": "action",
+                "label": "CloudSQL MySQL Execute",
+                "icon": "fa-plug",
+                "$$hashKey": "object:2378",
+                "isPluginAvailable": true,
+                "_uiPosition": {
+                    "left": "170px",
+                    "top": "275.5px"
+                }
+            }
+        ],
+        "connections": [
+            {
+                "from": "CloudSQL MySQL",
+                "to": "Wrangler"
+            },
+            {
+                "from": "Wrangler",
+                "to": "CloudSQL MySQL_sink"
+            },
+            {
+                "from": "CloudSQL MySQL Execute",
+                "to": "CloudSQL MySQL"
+            }
+        ],
+        "comments": [],
+        "resources": {
+            "memoryMB": 2048,
+            "virtualCores": 1
+        },
+        "driverResources": {
+            "memoryMB": 2048,
+            "virtualCores": 1
+        },
+        "postActions": [
+            {
+                "name": "CloudSQLMySQL-1",
+                "id": "CloudSQLMySQL5b8656cf-6b55-4889-9e07-7eba6a2b1957",
+                "plugin": {
+                    "name": "CloudSQLMySQL",
+                    "type": "postaction",
+                    "artifact": {
+                        "name": "cloudsql-mysql-plugin",
+                        "version": "1.5.0-SNAPSHOT",
+                        "scope": "USER"
+                    },
+                    "properties": {
+                        "jdbcPluginName": "cloudsql-mysql",
+                        "instanceType": "public",
+                        "connectionTimeout": "10",
+                        "database": "test",
+                        "user": "root",
+                        "password": "${password}",
+                        "connectionName": "${connection}",
+                        "query": "INSERT INTO orders (account,order_sum,product_name) SELECT acc, or_sum, prd_name from order_staging ON DUPLICATE KEY UPDATE order_sum=order_sum+1;\n\n"
+                    }
+                },
+                "description": "Post Action that runs a MySQL command on a CloudSQL instance database"
+            }
+        ],
+        "properties": {},
+        "processTimingEnabled": true,
+        "stageLoggingEnabled": false,
+        "engine": "spark",
+        "schedule": "0 * * * *",
+        "maxConcurrentRuns": 1
+    }
+}
